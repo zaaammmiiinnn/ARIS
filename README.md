@@ -41,39 +41,9 @@ Streamlit Dashboard
 
 ---
 
-## 📂 Project Structure
+## 🔑 Key Features
 
-```text
-ARIS/
-│
-├── backend/
-│   ├── api_clients/
-│   │   └── uidai_api.py
-│   ├── data_pipeline/
-│   │   ├── clean_data.py
-│   │   └── risk_engine.py
-│
-├── data/
-│   ├── cleaned/
-│   │   ├── biometric_cleaned.csv
-│   │   ├── demographic_cleaned.csv
-│   │   └── enrolment_cleaned.csv
-│   └── processed/
-│       ├── district_risk.csv
-│       └── state_risk.csv
-│
-├── frontend/
-│   ├── assets/
-│   │   └── india-soi.geojson
-│   └── app.py
-│
-├── .env
-├── .gitignore
-├── requirements.txt
-└── README.md
-
-
-##📊 Dashboard Features**
+**📊 Dashboard Features**
 🇮🇳 India Map Overview
 
 Uses Survey of India (SOI) GeoJSON
@@ -103,3 +73,35 @@ Sorted, searchable, and readable
 Card‑based KPIs
 
 Clean layout and styling
+
+## 📂 Project Structure
+
+---
+
+ARIS/
+│
+├── backend/
+│   ├── api_clients/
+│   │   └── uidai_api.py
+│   ├── data_pipeline/
+│   │   ├── clean_data.py
+│   │   └── risk_engine.py
+│
+├── data/
+│   ├── cleaned/
+│   │   ├── biometric_cleaned.csv
+│   │   ├── demographic_cleaned.csv
+│   │   └── enrolment_cleaned.csv
+│   └── processed/
+│       ├── district_risk.csv
+│       └── state_risk.csv
+│
+├── frontend/
+│   ├── assets/
+│   │   └── india-soi.geojson
+│   └── app.py
+│
+├── .env
+├── .gitignore
+├── requirements.txt
+└── README.md
