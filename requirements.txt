@@ -2,23 +2,23 @@
 # ARIS - Python Dependencies
 # =====================================================
 
-# Core data handling
-# Used for reading, cleaning, and aggregating UIDAI data
-pandas>=1.5.0
-numpy>=1.23.0
-
-# API handling
-# Used to call data.gov.in APIs
-requests>=2.31.0
-
-# Environment variable support
-# Used to safely load API keys from .env
-python-dotenv>=1.0.0
-
-# Frontend dashboard
-# Used to build interactive UI
+# ---------------- CORE DASHBOARD ----------------
 streamlit>=1.30.0
+# Streamlit is used to build the interactive web dashboard (UI)
 
-# Visualisation
-# Used to draw India map and heatmaps
-plotly>=5.0.0
+pandas>=1.5.0
+# Pandas is used for data loading, cleaning, filtering, and calculations
+
+# ---------------- VISUALIZATION ----------------
+plotly>=5.18.0
+# Plotly is used for charts like Top 5 Risky States and tables
+
+folium>=0.15.0
+# Folium is used to render the India map using Survey of India GeoJSON
+
+streamlit-folium>=0.18.0
+# streamlit-folium allows embedding Folium maps inside Streamlit apps
+
+# ---------------- ENVIRONMENT & CONFIG ----------------
+python-dotenv>=1.0.0
+# python-dotenv is used to load environment variables from .env file safely

@@ -3,6 +3,9 @@ import json
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
+import folium
+from streamlit_folium import st_folium
 
 # ==================================================
 # PAGE CONFIG
@@ -15,7 +18,7 @@ st.set_page_config(
 )
 
 # ==================================================
-# GLOBAL UI STYLING
+# UI STYLES
 # ==================================================
 st.markdown("""
 <style>
@@ -58,8 +61,34 @@ def load_data():
 
 state_df, district_df = load_data()
 
+state_df["state"] = state_df["state"].astype(str).str.strip()
+
 # ==================================================
-# LOAD INDIA SOI GEOJSON (COUNTRY LEVEL)
+# OFFICIAL INDIA STATES + UTS (LOCKED)
+# ==================================================
+VALID_STATES = [
+    "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+    "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand","Karnataka",
+    "Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram",
+    "Nagaland","Odisha","Punjab","Rajasthan","Sikkim","Tamil Nadu",
+    "Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal",
+    "Andaman and Nicobar Islands","Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi","Jammu and Kashmir","Ladakh",
+    "Lakshadweep","Puducherry"
+]
+
+state_df = state_df[state_df["state"].isin(VALID_STATES)]
+
+# ==================================================
+# METRICS
+# ==================================================
+states_count = state_df["state"].nunique()
+districts_count = district_df["district"].nunique()
+national_risk = round(state_df["risk_percent"].mean(), 1)
+
+# ==================================================
+# LOAD INDIA SOI GEOJSON (OUTLINE ONLY)
 # ==================================================
 if not os.path.exists(GEOJSON_PATH):
     st.error("❌ india-soi.geojson not found in frontend/assets/")
@@ -69,23 +98,12 @@ with open(GEOJSON_PATH, "r", encoding="utf-8") as f:
     india_geojson = json.load(f)
 
 # ==================================================
-# COMPUTE METRICS
-# ==================================================
-national_risk = round(state_df["risk_percent"].mean(), 2)
-
-top5 = (
-    state_df
-    .sort_values("risk_percent", ascending=False)
-    .head(5)
-)
-
-# ==================================================
 # HEADER
 # ==================================================
 st.markdown("""
 <h1 style="text-align:center;">🔐 Aadhaar Risk Intelligence System (ARIS)</h1>
 <p style="text-align:center; font-size:16px; color:#555;">
-India‑level Aadhaar risk overview using Survey of India boundaries
+India‑level Aadhaar Risk Overview (Survey of India Boundary)
 </p>
 <hr>
 """, unsafe_allow_html=True)
@@ -99,7 +117,7 @@ with c1:
     st.markdown(f"""
     <div class="kpi">
         <h3>States Analysed</h3>
-        <h1>{state_df["state"].nunique()}</h1>
+        <h1>{states_count}</h1>
     </div>
     """, unsafe_allow_html=True)
 
@@ -107,7 +125,7 @@ with c2:
     st.markdown(f"""
     <div class="kpi">
         <h3>Districts Analysed</h3>
-        <h1>{district_df["district"].nunique()}</h1>
+        <h1>{districts_count}</h1>
     </div>
     """, unsafe_allow_html=True)
 
@@ -122,59 +140,64 @@ with c3:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ==================================================
-# INDIA MAP + TOP 5
+# MAP + TOP 5
 # ==================================================
 left, right = st.columns([2, 1])
 
 # ---------------- INDIA MAP ----------------
+# ---------------- INDIA MAP ----------------
+# ---------------- INDIA MAP ----------------
+# ---------------- INDIA MAP (FOLIUM - GUARANTEED) ----------------
 with left:
     st.markdown("<div class='section'>", unsafe_allow_html=True)
     st.subheader("🗺️ India Overview (Survey of India Boundary)")
 
-    india_df = pd.DataFrame({
-        "country": ["India"],
-        "risk": [national_risk]
-    })
-
-    fig = px.choropleth(
-        india_df,
-        geojson=india_geojson,
-        locations="country",
-        featureidkey="properties.Source",
-        color="risk",
-        color_continuous_scale="Reds",
-        range_color=(0, 100),
-        labels={"risk": "Avg Risk (%)"}
+    # Create folium map centered on India
+    m = folium.Map(
+        location=[22.5, 80.0],
+        zoom_start=4,
+        tiles="cartodbpositron"
     )
 
-    fig.update_geos(
-        projection_type="mercator",
-        showland=True,
-        landcolor="#f0f2f6",
-        visible=False
-    )
+    # Add SOI GeoJSON
+    folium.GeoJson(
+        india_geojson,
+        name="India Boundary",
+        style_function=lambda x: {
+            "fillColor": "#e9edf3",
+            "color": "#333333",
+            "weight": 1.2,
+            "fillOpacity": 0.9,
+        },
+    ).add_to(m)
 
-    fig.update_layout(
-        height=550,
-        margin=dict(l=0, r=0, t=0, b=0)
-    )
+    # Render in Streamlit
+    st_folium(m, width=1000, height=550)
 
-    st.plotly_chart(fig, width="stretch")
     st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------------- TOP 5 ----------------
+
+
+# ---------------- TOP 5 STATES ----------------
 with right:
     st.markdown("<div class='section'>", unsafe_allow_html=True)
     st.subheader("🚨 Top 5 Risky States")
+
+    top5 = (
+        state_df
+        .sort_values("risk_percent", ascending=False)
+        .head(5)
+        .sort_values("risk_percent", ascending=True)
+    )
 
     bar_fig = px.bar(
         top5,
         x="risk_percent",
         y="state",
         orientation="h",
+        text=top5["risk_percent"].round(2),
         color="risk_percent",
-        color_continuous_scale="Reds",
-        text="risk_percent"
+        color_continuous_scale="Reds"
     )
 
     bar_fig.update_layout(
@@ -199,6 +222,7 @@ st.dataframe(
     width="stretch",
     height=420
 )
+
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ==================================================
@@ -208,7 +232,7 @@ st.markdown("""
 <hr>
 <center>
 <small>
-Map: Survey of India (SOI).  
+Map Source: Survey of India (SOI).  
 Risk values derived from UIDAI update datasets.  
 Risk ≠ Fraud.
 </small>
