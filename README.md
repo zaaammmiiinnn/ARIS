@@ -72,7 +72,8 @@ ARIS/
 ├── requirements.txt
 └── README.md
 
-**📊 Dashboard Features**
+
+##📊 Dashboard Features**
 🇮🇳 India Map Overview
 
 Uses Survey of India (SOI) GeoJSON
