@@ -78,6 +78,7 @@ Clean layout and styling
 
 ---
 
+```text
 ARIS/
 │
 ├── backend/
